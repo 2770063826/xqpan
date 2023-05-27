@@ -1,0 +1,16 @@
+File:
+  tempPath: D:\Springboot\Springboot项目\小青云盘\xqpan\src\main\resources\temp
+
+
+server:
+  port: 8081
+
+
+# 最大文件限制
+multipart:
+  maxFileSize: 3000MB
+  maxRequestSize: 10000MB
+
+# 默认分片大小
+Chunk:
+  size: 1024
