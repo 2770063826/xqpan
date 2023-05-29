@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
 
-
+    /**
+     * 登录
+     * @param user
+     * @return
+     */
     @PostMapping("/login")
     public Result<String> login(@RequestBody User user){
         return Result.success("ok");
