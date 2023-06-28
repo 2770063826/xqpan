@@ -1,20 +1,15 @@
 package com.abc.xqpan.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONString;
-import com.abc.xqpan.common.exceptor.MyException;
+import com.abc.xqpan.entity.FileChunkResult;
 import com.abc.xqpan.entity.Result;
-import com.abc.xqpan.entity.UploadForm;
+import com.abc.xqpan.entity.FileChunk;
 import com.abc.xqpan.service.FileService;
-import com.abc.xqpan.utils.FileUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 
 @RestController
 @RequestMapping("/api/file")
@@ -28,13 +23,13 @@ public class FileController {
 
     /**
      * 上传文件
-     * @param uploadForm
+     * @param fileChunk
      * @return
      */
     @PostMapping("/upload")
     public Result<String> upload(HttpServletRequest httpServletRequest,
-                         UploadForm uploadForm){
-        Boolean flag = fileService.upload(httpServletRequest, uploadForm);
+                         FileChunk fileChunk){
+        Boolean flag = fileService.upload(httpServletRequest, fileChunk);
         if(flag){
             return Result.success("上传成功");
         }
@@ -42,4 +37,24 @@ public class FileController {
             return Result.error("上传出错");
         }
     }
+
+
+    /**
+     * 检查分片是否存在
+     * @param httpServletRequest
+     * @param fileChunk
+     * @return
+     */
+    @GetMapping("/upload")
+    public Result<FileChunkResult> checkChunkExit(HttpServletRequest httpServletRequest,
+                                         FileChunk fileChunk){
+        FileChunkResult fileChunkResult;
+        try{
+            fileChunkResult = fileService.checkChunkExist(fileChunk);
+            return Result.success(fileChunkResult);
+        } catch (Exception e){
+            return Result.error(e.toString());
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.abc.xqpan.common.interceptor;
+package com.abc.xqpan.interceptor;
 
 import com.abc.xqpan.common.exceptor.MyException;
 import com.abc.xqpan.config.JwtConfig;

@@ -1,71 +1,151 @@
 package com.abc.xqpan.utils;
 
+import cn.hutool.json.JSONUtil;
+import com.abc.xqpan.common.MyConstants;
+import com.abc.xqpan.common.ResponseError;
 import com.abc.xqpan.common.exceptor.MyException;
-import com.abc.xqpan.entity.UploadForm;
+import com.abc.xqpan.entity.FileChunk;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
+import netscape.javascript.JSObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.*;
 
+
+@Component
 @Slf4j
 public class FileUtils {
 
+
     /**
-     * 创建文件
-     * @param fileResultPath
+     * 在工具类中注入
      */
-    public static void createFile(String fileResultPath){
-        File savePath = new File(fileResultPath);
-        if (!savePath.exists()) {
-            boolean flag = savePath.mkdirs();
-            if (!flag) {
-                log.error("保存目录创建失败");
-                throw new MyException("保存目录创建失败");
-            }
-        }
+    @Autowired
+    private static RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    public void setRedisTemplate(RedisTemplate redisTemplate) {
+        FileUtils.redisTemplate = redisTemplate;
     }
 
 
+    private static final String tempPath = "D:\\Springboot\\Springboot项目\\小青云盘\\xqpan\\src\\main\\resources\\temp\\";
+
     /**
-     * 上传单个文件
-     * @param resultFileName
-     * @param file
+     * 合并分片
+     * @param identifier
+     * @param filename
      * @return
      */
-    public static Boolean uploadOneFile(String resultFileName, MultipartFile file){
-        File saveFile = new File(resultFileName);
+    public static File mergeChunks(String identifier, String filename) throws MyException{
+        // 获取分块所在的目录
+        String chunkFileFolderPath = getChunkFileFolderPath(identifier);
+        // 获取文件的绝对路径
+        String filePath = getFilePath(identifier, filename);
+        File chunkFileFolder = new File(chunkFileFolderPath);
+        File mergeFile = new File(filePath);
+        File[] chunks = chunkFileFolder.listFiles();
+        // 排序
+        Arrays.stream(chunks).sorted(Comparator.comparing(item -> Integer.valueOf(item.getName())));
         try {
-            file.transferTo(saveFile);
-        } catch (IOException e) {
-            log.error("文件上传失败：" + e);
-            return false;
+            // 随机输入/输出流
+            RandomAccessFile randomAccessFileWriter = new RandomAccessFile(mergeFile, "rw");
+            byte[] bytes = new byte[1024];
+            for (File chunk : chunks) {
+                RandomAccessFile randomAccessFileReader = new RandomAccessFile(chunk, "r");
+                int len;
+                while ((len = randomAccessFileReader.read(bytes)) != -1) {
+                    randomAccessFileWriter.write(bytes, 0, len);
+                }
+                randomAccessFileReader.close();
+            }
+            randomAccessFileWriter.close();
+        } catch (Exception e) {
+            throw new MyException(ResponseError.MERGE_FILE_FAILED);
         }
-        return true;
+        return mergeFile;
     }
 
+
     /**
-     * 分片上传大文件
-     * @param resultFileName
-     * @param uploadForm
-     * @param defaultChunkSize
+     * 得到分块文件所属的目录
+     * @param identifier
      * @return
      */
-    public static Boolean uploadByRandomAccessFile(String resultFileName, UploadForm uploadForm, Long defaultChunkSize){
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(resultFileName, "rw")) {
-            // 分片大小必须和前端匹配，否则上传会导致文件损坏
-            long chunkSize = uploadForm.getFile().getSize() == 0L ? defaultChunkSize : uploadForm.getFile().getSize();
-            // 偏移量
-            long offset = chunkSize * (uploadForm.getChunkIndex() - 1);
-            // 定位到该分片的偏移量
-            randomAccessFile.seek(offset);
-            // 写入
-            randomAccessFile.write(uploadForm.getFile().getBytes());
-        } catch (IOException e) {
-            log.error("文件上传失败：" + e);
-            return false;
-        }
-        return true;
+    public static String getChunkFileFolderPath(String identifier){
+        return getFileFolderPath(identifier) + "chunks" + File.separator;
     }
+
+
+    /**
+     * 得到文件所属的目录
+     * @param identifier
+     * @return
+     */
+    public static String getFileFolderPath(String identifier) {
+        return tempPath + identifier.substring(0, 1) + File.separator +
+                identifier.substring(1, 2) + File.separator +
+                identifier + File.separator;
+    }
+
+
+    /**
+     * 在redis中保存分片并返回分片序号
+     * @param fileChunk
+     * @return
+     */
+    public static Integer saveRedis(FileChunk fileChunk) {
+        Set<Integer> uploaded = (Set<Integer>) redisTemplate.opsForHash().get(MyConstants.UPLOAD_FILE + fileChunk.getIdentifier(), "uploaded");
+        if (uploaded == null) {
+            uploaded = new HashSet<>(Arrays.asList(fileChunk.getChunkNumber()));
+            HashMap<String, Object> objectObjectHashMap = new HashMap<>();
+            objectObjectHashMap.put("uploaded", uploaded);
+            objectObjectHashMap.put("totalChunks", fileChunk.getTotalChunks());
+            objectObjectHashMap.put("totalSize", fileChunk.getTotalSize());
+            objectObjectHashMap.put("path", getFileRelativelyPath(fileChunk.getIdentifier(), fileChunk.getFilename()));
+            redisTemplate.opsForHash().putAll(MyConstants.UPLOAD_FILE + fileChunk.getIdentifier(), objectObjectHashMap);
+        } else {
+            uploaded.add(fileChunk.getChunkNumber());
+            redisTemplate.opsForHash().put(MyConstants.UPLOAD_FILE + fileChunk.getIdentifier(), "uploaded", uploaded);
+        }
+
+        return uploaded.size();
+    }
+
+
+    /**
+     * 获取文件的相对路径
+     * @param identifier
+     * @param filename
+     * @return
+     */
+    public static String getFileRelativelyPath(String identifier, String filename) {
+        // 去掉文件名后缀
+        String ext = filename.substring(filename.lastIndexOf("."));
+        return "/" + identifier.substring(0, 1) + "/" +
+                identifier.substring(1, 2) + "/" +
+                identifier + "/" + identifier
+                + ext;
+    }
+
+
+    /**
+     * 得到文件的绝对路径
+     * @param identifier
+     * @param filename
+     * @return
+     */
+    public static String getFilePath(String identifier, String filename) {
+        String ext = filename.substring(filename.lastIndexOf("."));
+        return getFileFolderPath(identifier) + identifier + ext;
+    }
+
+
 }
