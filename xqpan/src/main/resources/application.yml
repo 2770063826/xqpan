@@ -3,7 +3,7 @@ spring:
     name: xyzp
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/dbstudy?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/xqpan?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 123456
   jackson:
@@ -13,8 +13,9 @@ spring:
       #Long类型转换，防止精度丢失
       write_numbers_as_strings: true
   redis:
+    host: 150.158.30.225
+    password: lijunxi
     port: 6379
-    host: localhost
   mail:
     default-encoding: UTF-8
     host: smtp.qq.com

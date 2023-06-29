@@ -81,7 +81,6 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-web:5.2.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.2.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-webmvc:5.2.9.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-aop:5.2.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:5.2.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: cn.hutool:hutool-all:5.7.22" level="project" />
     <orderEntry type="library" name="Maven: io.jsonwebtoken:jjwt:0.7.0" level="project" />
@@ -123,5 +122,11 @@
     <orderEntry type="library" name="Maven: org.mybatis:mybatis:3.5.7" level="project" />
     <orderEntry type="library" name="Maven: org.mybatis:mybatis-spring:2.0.6" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: mysql:mysql-connector-java:8.0.21" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-security:2.3.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-aop:5.2.9.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-config:5.3.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-core:5.3.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-web:5.3.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.33" level="project" />
   </component>
 </module>

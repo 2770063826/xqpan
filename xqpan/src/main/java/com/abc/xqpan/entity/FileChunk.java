@@ -18,9 +18,6 @@ public class FileChunk {
     // 文件md5
     private String identifier;
 
-    // 文件类型
-    private String fileType;
-
     // 当前分片序号
     private Integer chunkNumber;
 
@@ -36,8 +33,18 @@ public class FileChunk {
     // 分块总数
     private Integer totalChunks;
 
-    // 文件名
+    // 文件上传名
     private String filename;
 
+    // 上传者ID
+    private Long userId;
 
+    // 文件访问路径
+    private String fileUrl;
+
+    // 文件类型
+    private Integer fileType;
+
+    // 状态
+    private Integer status;
 }
