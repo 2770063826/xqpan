@@ -1,19 +1,14 @@
 package com.abc.xqpan.utils;
 
-import cn.hutool.json.JSONUtil;
 import com.abc.xqpan.common.MyConstants;
-import com.abc.xqpan.common.ResponseError;
+import com.abc.xqpan.common.ResponseMsg;
 import com.abc.xqpan.common.exceptor.MyException;
 import com.abc.xqpan.entity.FileChunk;
 import lombok.extern.slf4j.Slf4j;
-import netscape.javascript.JSObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.util.*;
@@ -68,7 +63,7 @@ public class FileUtils {
             }
             randomAccessFileWriter.close();
         } catch (Exception e) {
-            throw new MyException(ResponseError.MERGE_FILE_FAILED);
+            throw new MyException(ResponseMsg.MERGE_FILE_FAILED);
         }
         return mergeFile;
     }

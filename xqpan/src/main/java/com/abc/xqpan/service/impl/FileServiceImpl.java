@@ -1,6 +1,6 @@
 package com.abc.xqpan.service.impl;
 
-import com.abc.xqpan.common.ResponseError;
+import com.abc.xqpan.common.ResponseMsg;
 import com.abc.xqpan.common.exceptor.MyException;
 import com.abc.xqpan.entity.FileChunk;
 import com.abc.xqpan.entity.FileChunkResult;
@@ -9,19 +9,15 @@ import com.abc.xqpan.utils.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import netscape.javascript.JSObject;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.Objects;
 import java.util.Set;
 
 
@@ -42,7 +38,7 @@ public class FileServiceImpl implements FileService {
         if (!fileChunkTemp.exists()) {
             boolean mkdirs = fileChunkTemp.mkdirs();
             if (!mkdirs) {
-                log.error(ResponseError.CREATE_TEMP_FILE_FAILED);
+                log.error(ResponseMsg.CREATE_TEMP_FILE_FAILED);
                 return false;
             }
         }
@@ -60,7 +56,7 @@ public class FileServiceImpl implements FileService {
             if (nowSize.equals(fileChunk.getTotalChunks())) {
                 File mergeFile = FileUtils.mergeChunks(fileChunk.getIdentifier(), fileChunk.getFilename());
                 if (mergeFile == null) {
-                    throw new MyException(ResponseError.MERGE_FILE_FAILED);
+                    throw new MyException(ResponseMsg.MERGE_FILE_FAILED);
                 }
             }
         } catch (Exception e){

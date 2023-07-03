@@ -2,6 +2,7 @@ package com.abc.xqpan.interceptor;
 
 import com.abc.xqpan.common.MyConstants;
 import com.abc.xqpan.common.RedisCache;
+import com.abc.xqpan.common.exceptor.MyException;
 import com.abc.xqpan.entity.LoginUser;
 import com.abc.xqpan.entity.User;
 import com.abc.xqpan.utils.JwtUtil;
@@ -42,13 +43,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             userid = claims.getSubject();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("token非法");
+            throw new MyException("token非法");
         }
         // 从redis中获取用户信息
         String redisKey = MyConstants.LOGIN + userid;
         LoginUser loginUser = redisCache.getCacheObject(redisKey);
         if(Objects.isNull(loginUser)){
-            throw new RuntimeException("用户未登录");
+            throw new MyException("用户未登录");
         }
         // 存入SecurityContextHolder
         //TODO 获取权限信息封装到Authentication中

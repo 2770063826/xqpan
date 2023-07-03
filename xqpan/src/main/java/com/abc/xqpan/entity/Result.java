@@ -1,11 +1,15 @@
 package com.abc.xqpan.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Result<T> {
 
-    // 状态码，错误为201，正确为200
+    // 是否返回正确
     private Boolean success;
     // 错误信息，无错则无
     private String message;
